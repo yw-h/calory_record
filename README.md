@@ -44,3 +44,20 @@ POST /api/deepseek/chat
 ```
 
 代理会从环境变量 `DEEPSEEK_API_KEY` 读取密钥，并把请求转发给 DeepSeek。
+
+## Windows release
+
+生成可解压使用的 Windows 软件包：
+
+```powershell
+.\build-release.ps1
+```
+
+脚本会生成：
+
+```text
+release\DailyNutritionLedger-win-x64\
+release\DailyNutritionLedger-win-x64.zip
+```
+
+发布时请上传 zip，用户解压后双击 `DailyNutritionLedger.exe` 即可启动。不要只发布单个 exe，因为软件还需要内置的 Node.js 运行时、`server.js` 和网页资源文件。

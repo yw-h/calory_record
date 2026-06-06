@@ -30,6 +30,7 @@ const defaultState = {
     path: "/每日食谱记录/nutrition-ledger.json",
   },
   meals: [],
+  deletedMeals: [],
   weights: [],
   activities: [],
   selectedDate: toDateKey(new Date()),
@@ -144,6 +145,7 @@ function loadState() {
       api: { ...defaultState.api, ...(parsed.api || {}) },
       cloud: { ...defaultState.cloud, ...(parsed.cloud || {}) },
       meals: Array.isArray(parsed.meals) ? parsed.meals : [],
+      deletedMeals: Array.isArray(parsed.deletedMeals) ? parsed.deletedMeals : [],
       weights: Array.isArray(parsed.weights) ? parsed.weights : [],
       activities: Array.isArray(parsed.activities) ? parsed.activities : [],
       selectedDate: parsed.selectedDate || toDateKey(new Date()),
@@ -217,14 +219,15 @@ function renderSummary() {
   const week = summarizeRange(getWeekDates(state.selectedDate));
   const month = summarizeRange(getMonthDates(state.selectedDate));
   const weightTrend = getWeightTrend();
-  const remaining = target.goalCalories - stats.calories;
-  const progress = target.goalCalories > 0 ? clamp((stats.calories / target.goalCalories) * 100, 0, 140) : 0;
+  const activityAdjustedGoal = getActivityAdjustedGoal(stats, target);
+  const remaining = activityAdjustedGoal - stats.calories;
+  const progress = activityAdjustedGoal > 0 ? clamp((stats.calories / activityAdjustedGoal) * 100, 0, 140) : 0;
   const dailyDeficit = getRecordedDeficit(stats, target);
 
   $("#dailyIntake").textContent = `${round(stats.calories)} kcal`;
   $("#dailyMacroLine").textContent = `蛋白 ${round(stats.protein, 1)}g · 碳水 ${round(stats.carbs, 1)}g · 脂肪 ${round(stats.fat, 1)}g`;
   $("#dailyDeficit").textContent = stats.hasMeals ? formatSignedKcal(dailyDeficit, "缺口", "盈余") : "未记录";
-  $("#dailyTargetLine").textContent = `目标热量 ${round(target.goalCalories)} kcal · 活动 ${round(stats.activityCalories)} kcal`;
+  $("#dailyTargetLine").textContent = `目标热量 ${round(target.goalCalories)} kcal · 活动 ${round(stats.activityCalories)} kcal · 今日可用 ${round(activityAdjustedGoal)} kcal`;
   $("#weeklyDeficit").textContent = formatSignedKcal(week.deficit, "缺口", "盈余");
   $("#weeklyIntakeLine").textContent = `摄入 ${round(week.intake)} kcal · ${week.loggedDays} 天有记录`;
   $("#monthlyDeficit").textContent = formatSignedKcal(month.deficit, "缺口", "盈余");
@@ -275,7 +278,7 @@ function renderMeals() {
 
   $$("[data-delete-meal]").forEach((button) => {
     button.addEventListener("click", () => {
-      state.meals = state.meals.filter((meal) => meal.id !== button.dataset.deleteMeal);
+      deleteMeal(button.dataset.deleteMeal);
       saveState();
       render();
       showToast("已删除餐食记录");
@@ -699,7 +702,7 @@ function saveApiSettings(event) {
     reasoningEffort: $("#reasoningEffort").value,
     showReasoning: $("#showReasoning").checked,
   };
-  saveState();
+  saveState({ touch: false, sync: false });
   updateApiStatus();
   showToast("API 设置已保存");
 }
@@ -712,7 +715,7 @@ function saveCloudSettings(event) {
     password: $("#cloudPassword").value,
     path: normalizeCloudPath($("#cloudPath").value.trim() || "/每日食谱记录/nutrition-ledger.json"),
   };
-  saveState({ sync: false });
+  saveState({ touch: false, sync: false });
   updateCloudStatus();
   showToast("云同步配置已保存");
   syncCloudNow();
@@ -755,38 +758,41 @@ async function syncCloudNow(options = {}) {
     }
 
     const remoteState = normalizeImportedState(remoteRaw);
-    const localTime = getStateUpdatedTime(state);
+    const localState = state;
+    const mergedState = mergeStates(localState, remoteState);
+    const localChanged = !areSyncPayloadsEqual(localState, mergedState);
+    const remoteChanged = !areSyncPayloadsEqual(remoteState, mergedState);
+    const localTime = getStateUpdatedTime(localState);
     const remoteTime = getStateUpdatedTime(remoteState);
 
-    if (localTime > remoteTime) {
-      await uploadCurrentStateToCloud();
-      updateCloudStatus("已上传");
-      if (!options.startup) showToast("已自动上传到云端");
-      return;
-    }
-
-    if (remoteTime > localTime) {
+    if (localChanged) {
       suppressCloudSync = true;
-      state = mergeStates(state, remoteState);
-      state.dataUpdatedAt = remoteState.dataUpdatedAt || new Date(remoteTime).toISOString();
+      state = {
+        ...mergedState,
+        dataUpdatedAt: getMergedDataUpdatedAt(localState, remoteState, mergedState, localChanged, remoteChanged),
+      };
       calendarCursor = startOfMonth(parseDateKey(state.selectedDate || toDateKey(new Date())));
       saveState({ touch: false, sync: false });
       hydrateForms();
       render();
+    }
+
+    if (remoteChanged) {
+      await uploadCurrentStateToCloud();
+      updateCloudStatus(localChanged ? "已合并同步" : "已上传");
+      if (!options.startup) {
+        showToast(localChanged ? "已合并本地和云端数据" : "已自动上传到云端");
+      }
+      return;
+    }
+
+    if (localChanged || remoteTime > localTime) {
       updateCloudStatus("已拉取");
       if (!options.startup) showToast("已从云端同步最新数据");
       return;
     }
 
-    if (localTime === remoteTime) {
-      const merged = mergeStates(state, remoteState);
-      const mergedTime = new Date().toISOString();
-      state = { ...merged, dataUpdatedAt: mergedTime };
-      saveState({ touch: false, sync: false });
-      await uploadCurrentStateToCloud();
-      updateCloudStatus("已同步");
-      return;
-    }
+    updateCloudStatus("已同步");
   } catch (error) {
     updateCloudStatus("同步失败");
     showToast(error.message);
@@ -1248,7 +1254,7 @@ function buildCoachPrompt(action, question) {
   const todayStats = getDayStats(state.selectedDate);
   const week = summarizeRange(getWeekDates(state.selectedDate));
   const month = summarizeRange(getMonthDates(state.selectedDate));
-  const recentMeals = state.meals
+  const recentMeals = getActiveMeals()
     .filter((meal) => rangeBackFrom(state.selectedDate, 7).includes(meal.date))
     .sort((a, b) => `${a.date}${a.time}`.localeCompare(`${b.date}${b.time}`));
   const recentWeights = state.weights
@@ -1359,7 +1365,11 @@ function getDayStats(date) {
 }
 
 function getRecordedDeficit(stats, target) {
-  return stats.hasMeals ? target.goalCalories - stats.calories : 0;
+  return stats.hasMeals ? getActivityAdjustedGoal(stats, target) - stats.calories : 0;
+}
+
+function getActivityAdjustedGoal(stats, target) {
+  return target.goalCalories + (Number(stats.activityCalories) || 0);
 }
 
 function summarizeRange(dates) {
@@ -1368,10 +1378,11 @@ function summarizeRange(dates) {
   const recordedDays = dayStats.filter((day) => day.hasMeals);
   const intake = sum(recordedDays.map((day) => day.calories));
   const deficit = sum(recordedDays.map((day) => getRecordedDeficit(day, target)));
+  const targetCalories = sum(recordedDays.map((day) => getActivityAdjustedGoal(day, target)));
   return {
     intake,
     deficit,
-    targetCalories: target.goalCalories * recordedDays.length,
+    targetCalories,
     loggedDays: recordedDays.length,
     days: dates.length,
   };
@@ -1379,7 +1390,7 @@ function summarizeRange(dates) {
 
 function buildTargetAdvice(stats, target) {
   if (!state.profile) return "完善身体档案后生成目标建议。";
-  const remaining = target.goalCalories - stats.calories;
+  const remaining = getActivityAdjustedGoal(stats, target) - stats.calories;
   const proteinGap = target.proteinTarget - stats.protein;
   const proteinText = proteinGap > 0 ? `蛋白还差约 ${round(proteinGap)}g` : "蛋白已达标";
   const activityText = stats.activityCalories ? `今日活动约消耗 ${round(stats.activityCalories)} kcal，` : "";
@@ -1390,7 +1401,20 @@ function buildTargetAdvice(stats, target) {
 }
 
 function getMealsForDate(date) {
-  return state.meals.filter((meal) => meal.date === date).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+  return getActiveMeals().filter((meal) => meal.date === date).sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+}
+
+function getActiveMeals(candidate = state) {
+  const deleted = new Set((candidate.deletedMeals || []).map((item) => item.id));
+  return (candidate.meals || []).filter((meal) => meal.id ? !deleted.has(meal.id) : true);
+}
+
+function deleteMeal(mealId) {
+  if (!mealId) return;
+  const meal = state.meals.find((item) => item.id === mealId);
+  const deletedAt = new Date().toISOString();
+  state.meals = state.meals.filter((item) => item.id !== mealId);
+  state.deletedMeals = mergeDeletedMeals(state.deletedMeals, [{ id: mealId, deletedAt, updatedAt: deletedAt, date: meal?.date }]);
 }
 
 function getActivityForDate(date) {
@@ -1583,6 +1607,7 @@ function normalizeImportedState(imported) {
     api: { ...defaultState.api, ...(imported.api || {}), apiKey: state.api?.apiKey || imported.api?.apiKey || "" },
     cloud: { ...defaultState.cloud, ...(imported.cloud || {}), ...(state.cloud || {}) },
     meals: Array.isArray(imported.meals) ? imported.meals : [],
+    deletedMeals: Array.isArray(imported.deletedMeals) ? imported.deletedMeals : [],
     weights: Array.isArray(imported.weights) ? imported.weights : [],
     activities: Array.isArray(imported.activities) ? imported.activities : [],
     selectedDate: imported.selectedDate || toDateKey(new Date()),
@@ -1596,12 +1621,24 @@ function mergeStates(localState, remoteState) {
     profile: pickNewerByUpdatedAt(localState.profile, remoteState.profile) || localState.profile || remoteState.profile,
     api: { ...defaultState.api, ...(localState.api || {}) },
     cloud: { ...defaultState.cloud, ...(localState.cloud || {}) },
-    meals: mergeByKey(localState.meals, remoteState.meals, (meal) => meal.id || `${meal.date}|${meal.time}|${meal.text}`),
+    meals: mergeActiveMeals(localState, remoteState),
+    deletedMeals: mergeDeletedMeals(localState.deletedMeals, remoteState.deletedMeals),
     weights: mergeByKey(localState.weights, remoteState.weights, (weight) => weight.date, pickNewerByUpdatedAt),
     activities: mergeByKey(localState.activities, remoteState.activities, (activity) => activity.date, pickNewerByUpdatedAt),
     selectedDate: localState.selectedDate || remoteState.selectedDate || toDateKey(new Date()),
     dataUpdatedAt: getStateUpdatedTime(localState) >= getStateUpdatedTime(remoteState) ? localState.dataUpdatedAt : remoteState.dataUpdatedAt,
   };
+}
+
+function getMergedDataUpdatedAt(localState, remoteState, mergedState, localChanged, remoteChanged) {
+  if (localChanged && remoteChanged) return new Date().toISOString();
+  if (localChanged) {
+    const remoteTime = getStateUpdatedTime(remoteState);
+    return remoteState.dataUpdatedAt || (remoteTime ? new Date(remoteTime).toISOString() : new Date().toISOString());
+  }
+  const winner = getStateUpdatedTime(remoteState) > getStateUpdatedTime(localState) ? remoteState : localState;
+  const mergedTime = getStateUpdatedTime(mergedState);
+  return winner?.dataUpdatedAt || mergedState.dataUpdatedAt || (mergedTime ? new Date(mergedTime).toISOString() : new Date().toISOString());
 }
 
 function getStateUpdatedTime(candidate) {
@@ -1610,10 +1647,61 @@ function getStateUpdatedTime(candidate) {
   const itemTimes = [
     candidate.profile?.updatedAt,
     ...(candidate.meals || []).map((item) => item.updatedAt || item.date),
+    ...(candidate.deletedMeals || []).map((item) => item.updatedAt || item.deletedAt || item.date),
     ...(candidate.weights || []).map((item) => item.updatedAt || item.date),
     ...(candidate.activities || []).map((item) => item.updatedAt || item.date),
   ].map((value) => Date.parse(value || 0) || 0);
   return Math.max(direct, ...itemTimes, 0);
+}
+
+function areSyncPayloadsEqual(a, b) {
+  return stableStringify(getSyncPayload(a)) === stableStringify(getSyncPayload(b));
+}
+
+function getSyncPayload(candidate = {}) {
+  return {
+    profile: candidate.profile || null,
+    meals: normalizeSyncItems(getActiveMeals(candidate), (meal) => meal.id || `${meal.date}|${meal.time}|${meal.text}`),
+    deletedMeals: normalizeSyncItems(candidate.deletedMeals, (meal) => meal.id),
+    weights: normalizeSyncItems(candidate.weights, (weight) => weight.date),
+    activities: normalizeSyncItems(candidate.activities, (activity) => activity.date),
+  };
+}
+
+function normalizeSyncItems(items = [], keyFn) {
+  return (Array.isArray(items) ? items : [])
+    .map((item) => ({ ...item }))
+    .sort((a, b) => String(keyFn(a)).localeCompare(String(keyFn(b))));
+}
+
+function stableStringify(value) {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function mergeActiveMeals(localState, remoteState) {
+  const deleted = new Set(mergeDeletedMeals(localState.deletedMeals, remoteState.deletedMeals).map((meal) => meal.id));
+  return mergeByKey(localState.meals, remoteState.meals, (meal) => meal.id || `${meal.date}|${meal.time}|${meal.text}`)
+    .filter((meal) => meal.id ? !deleted.has(meal.id) : true);
+}
+
+function mergeDeletedMeals(localItems = [], remoteItems = []) {
+  return mergeByKey(localItems, remoteItems, (meal) => meal.id, pickNewerDeletedMeal)
+    .filter((meal) => meal.id);
+}
+
+function pickNewerDeletedMeal(a, b) {
+  const aTime = Date.parse(a.updatedAt || a.deletedAt || a.date || 0) || 0;
+  const bTime = Date.parse(b.updatedAt || b.deletedAt || b.date || 0) || 0;
+  return bTime >= aTime ? b : a;
 }
 
 function mergeByKey(localItems = [], remoteItems = [], keyFn, resolver = pickNewerByUpdatedAt) {

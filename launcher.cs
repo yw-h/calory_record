@@ -16,19 +16,26 @@ internal static class Launcher
     {
         string appDir = AppDomain.CurrentDomain.BaseDirectory;
         string serverPath = Path.Combine(appDir, "server.js");
+        string nodePath = GetNodePath(appDir);
 
         if (!File.Exists(serverPath))
         {
-            MessageBox.Show("找不到 server.js，请把启动程序放在应用根目录。", "每日食谱记录", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("找不到 server.js。请使用完整的 release 解压包启动应用。", "每日食谱记录", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
+        }
+
+        if (nodePath == null)
+        {
+            MessageBox.Show("找不到 Node.js 运行时。请使用完整的 release 解压包，或先安装 Node.js。", "每日食谱记录", MessageBoxButtons.OK, MessageBoxIcon.Error);
             return;
         }
 
         if (!IsHealthy())
         {
-            StartServer(appDir);
+            StartServer(appDir, nodePath);
             if (!WaitForServer())
             {
-                MessageBox.Show("本地服务启动失败。请确认已安装 Node.js，并且 5173 端口没有被其他程序占用。", "每日食谱记录", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("本地服务启动失败。请确认 5173 端口没有被其他程序占用。", "每日食谱记录", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
         }
@@ -36,10 +43,21 @@ internal static class Launcher
         OpenBrowser();
     }
 
-    private static void StartServer(string appDir)
+    private static string GetNodePath(string appDir)
+    {
+        string bundledNode = Path.Combine(appDir, "runtime", "node.exe");
+        if (File.Exists(bundledNode))
+        {
+            return bundledNode;
+        }
+
+        return "node";
+    }
+
+    private static void StartServer(string appDir, string nodePath)
     {
         ProcessStartInfo startInfo = new ProcessStartInfo();
-        startInfo.FileName = "node";
+        startInfo.FileName = nodePath;
         startInfo.Arguments = "server.js";
         startInfo.WorkingDirectory = appDir;
         startInfo.UseShellExecute = false;

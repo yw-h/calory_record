@@ -4,3 +4,4 @@ android-app/local.properties
 
 node_modules/
 *.log
+release/
