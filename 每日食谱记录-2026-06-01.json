@@ -1,0 +1,282 @@
+{
+  "profile": {
+    "height": 175,
+    "weight": 77.3,
+    "age": 28,
+    "gender": "male",
+    "activity": 1.375,
+    "goal": "cut",
+    "pace": "standard",
+    "targetWeight": 67,
+    "updatedAt": "2026-05-28T11:53:11.711Z"
+  },
+  "api": {
+    "mode": "proxy",
+    "baseUrl": "https://api.deepseek.com",
+    "model": "deepseek-v4-flash",
+    "apiKey": "",
+    "aiMode": "fast",
+    "reasoningEffort": "high",
+    "showReasoning": true
+  },
+  "cloud": {
+    "url": "https://dav.jianguoyun.com/dav",
+    "username": "tghyw0987@gmail.com",
+    "password": "",
+    "path": "/每日食谱记录/nutrition-ledger.json"
+  },
+  "meals": [
+    {
+      "id": "80c59e9e-a02c-426b-9640-bafc91416f9a",
+      "date": "2026-05-28",
+      "time": "19:55",
+      "type": "午餐",
+      "text": "蒸米饭150g\n鱼香肉丝（多笋丝） 100g\n口水鸡 150g\n香菜肉丝 100g\n白灼菜心 150g",
+      "calories": 700,
+      "protein": 45,
+      "carbs": 60,
+      "fat": 30
+    },
+    {
+      "id": "45ce5206-2ba2-4543-9e93-42b48af1923d",
+      "date": "2026-05-28",
+      "time": "19:57",
+      "type": "晚餐",
+      "text": "食堂微辣麻辣香锅（650g素类，主要为菌菇，豆腐，鸭血和一些蔬菜，150g肉类为50g鸭肠和100g鸡三角骨）",
+      "calories": 680,
+      "protein": 38,
+      "carbs": 45,
+      "fat": 40
+    },
+    {
+      "id": "968e0e99-b984-45b6-b39f-cfaf500f1427",
+      "date": "2026-05-28",
+      "time": "19:57",
+      "type": "运动补给",
+      "text": "20g浓缩乳清蛋白粉和5g肌酸",
+      "calories": 80,
+      "protein": 16,
+      "carbs": 1,
+      "fat": 0.6
+    },
+    {
+      "id": "71a01f09-cce9-43a5-b912-266aea2120e0",
+      "date": "2026-05-28",
+      "time": "20:16",
+      "type": "早餐",
+      "text": "奇亚籽 10g",
+      "calories": 50,
+      "protein": 1.6,
+      "carbs": 4,
+      "fat": 3
+    },
+    {
+      "id": "a3f2e9a3-147a-49bb-991a-c6006ee9f973",
+      "date": "2026-05-28",
+      "time": "21:41",
+      "type": "加餐",
+      "text": "盐焗鸡蛋2个",
+      "calories": 160,
+      "protein": 14,
+      "carbs": 2,
+      "fat": 11
+    },
+    {
+      "id": "00476c8f-2304-4e19-8c1a-2030b8c71d22",
+      "date": "2026-05-29",
+      "time": "07:58",
+      "type": "早餐",
+      "text": "吐司面包 82g（每100g 1596kj）",
+      "calories": 313,
+      "protein": 9,
+      "carbs": 52,
+      "fat": 4
+    },
+    {
+      "id": "4d5f63f0-bb65-462f-920a-eb448433f9f8",
+      "date": "2026-05-29",
+      "time": "16:40",
+      "type": "午餐",
+      "text": "蒸米饭150g，红烧笋片蹄筋200g（笋片蹄筋各一半），青椒干豆腐200g",
+      "calories": 430,
+      "protein": 28,
+      "carbs": 55,
+      "fat": 12
+    },
+    {
+      "id": "22df990d-b378-42d6-96a4-d90290e1ebc8",
+      "date": "2026-05-29",
+      "time": "14:26",
+      "type": "晚餐",
+      "text": "双蛋杂粮煎饼（一片薄脆，双倍生菜，双蛋，一份海带丝），一个水煎包（75大卡）",
+      "calories": 530,
+      "protein": 28,
+      "carbs": 60,
+      "fat": 20
+    },
+    {
+      "id": "167d099e-4ca0-4830-9fc7-632c3d32b783",
+      "date": "2026-05-29",
+      "time": "14:26",
+      "type": "运动补给",
+      "text": "乳清蛋白粉 20g，肌酸5g",
+      "calories": 80,
+      "protein": 16,
+      "carbs": 3,
+      "fat": 1
+    },
+    {
+      "id": "ac4d3a12-765e-46fd-8afc-c7e33bd8019c",
+      "date": "2026-05-30",
+      "time": "14:27",
+      "type": "早餐",
+      "text": "一个水煮蛋，三个水煎包（每个75大卡），一杯牛奶（250ml）",
+      "calories": 475,
+      "protein": 30,
+      "carbs": 40,
+      "fat": 20
+    },
+    {
+      "id": "5dcc4cb6-9cae-4a62-9a53-11fd573f0af1",
+      "date": "2026-05-30",
+      "time": "14:30",
+      "type": "午餐",
+      "text": "200g口水鸭，100g清炒豇豆蘑菇，80g尖椒鸡块，100g干锅花菜，150g黄瓜炒鸡蛋，100g外婆菜炒蛋，100g蒸米饭",
+      "calories": 780,
+      "protein": 45,
+      "carbs": 60,
+      "fat": 35
+    },
+    {
+      "id": "bfc476a6-323c-4dec-8b08-c797c0bc01a6",
+      "date": "2026-05-30",
+      "time": "19:51",
+      "type": "晚餐",
+      "text": "清远鸡煲四分之一只鸡，配菜响铃卷，炸腐竹，生菜，油豆腐，丝瓜，山药片若干",
+      "calories": 850,
+      "protein": 60,
+      "carbs": 45,
+      "fat": 50,
+      "updatedAt": "2026-05-31T11:51:43.379Z"
+    },
+    {
+      "id": "4b7a6059-9298-4664-9c8a-0e030a8c612a",
+      "date": "2026-05-31",
+      "time": "19:53",
+      "type": "早餐",
+      "text": "煮鸡蛋一个，四个水煎包（每个75卡），10g奇亚籽泡水",
+      "calories": 430,
+      "protein": 22,
+      "carbs": 35,
+      "fat": 20,
+      "updatedAt": "2026-05-31T11:53:30.172Z"
+    },
+    {
+      "id": "4be99009-e2b7-4a1b-8e1e-27b400edc490",
+      "date": "2026-05-31",
+      "time": "19:56",
+      "type": "午餐",
+      "text": "清汤清远鸡煲四分之一只，额外吃了一些响铃卷（2个），炸腐竹（3片），油豆腐（三四个），生菜，山药片，丝瓜若干等",
+      "calories": 680,
+      "protein": 45,
+      "carbs": 40,
+      "fat": 38,
+      "updatedAt": "2026-05-31T11:56:10.502Z"
+    },
+    {
+      "id": "7aa9eba1-b4fe-4190-940f-8cb68ea9f593",
+      "date": "2026-05-31",
+      "time": "19:56",
+      "type": "晚餐",
+      "text": "全脂牛奶200ml",
+      "calories": 130,
+      "protein": 6.6,
+      "carbs": 9.4,
+      "fat": 7.2,
+      "updatedAt": "2026-05-31T11:56:28.850Z"
+    },
+    {
+      "id": "5164aec1-1d3c-423f-bcf8-f16c3296873d",
+      "date": "2026-05-31",
+      "time": "10:09",
+      "type": "运动补给",
+      "text": "on金标乳清蛋白粉30g，肌酸5g，绿箭口香糖一片",
+      "calories": 125,
+      "protein": 24,
+      "carbs": 4,
+      "fat": 1.5,
+      "updatedAt": "2026-06-01T02:09:23.171Z"
+    },
+    {
+      "id": "18015ac4-7b4f-4050-b3ed-98cf847c119f",
+      "date": "2026-06-01",
+      "time": "10:10",
+      "type": "早餐",
+      "text": "牛奶土司两片",
+      "calories": 280,
+      "protein": 10,
+      "carbs": 44,
+      "fat": 6,
+      "updatedAt": "2026-06-01T02:10:15.308Z"
+    }
+  ],
+  "weights": [
+    {
+      "date": "2026-05-28",
+      "weight": 77.5,
+      "note": "档案初始化"
+    },
+    {
+      "date": "2026-05-30",
+      "weight": 77.3,
+      "note": "晨重",
+      "updatedAt": "2026-05-30T07:35:13.102Z"
+    }
+  ],
+  "activities": [
+    {
+      "date": "2026-05-28",
+      "steps": 5000,
+      "type": "力量",
+      "minutes": 30,
+      "intensity": "中",
+      "calories": 388,
+      "note": "大腿 肩膀",
+      "updatedAt": "2026-05-28T13:59:24.026Z"
+    },
+    {
+      "date": "2026-05-29",
+      "steps": 7000,
+      "type": "",
+      "minutes": 0,
+      "intensity": "中",
+      "calories": 244,
+      "note": "",
+      "updatedAt": "2026-05-30T07:35:32.897Z"
+    },
+    {
+      "date": "2026-05-30",
+      "steps": 0,
+      "type": "",
+      "minutes": 0,
+      "intensity": "中",
+      "calories": 282,
+      "note": "",
+      "updatedAt": "2026-05-31T11:52:30.328Z"
+    },
+    {
+      "date": "2026-05-31",
+      "steps": 0,
+      "type": "",
+      "minutes": 0,
+      "intensity": "中",
+      "calories": 280,
+      "note": "",
+      "updatedAt": "2026-05-31T11:56:52.590Z"
+    }
+  ],
+  "selectedDate": "2026-05-30",
+  "dataUpdatedAt": "2026-06-01T02:13:51.054Z",
+  "exportedAt": "2026-06-01T02:14:24.742Z",
+  "appVersion": "daily-nutrition-ledger:v1"
+}

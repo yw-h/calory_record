@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#10221f" />
+    <title>每日食谱记录</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Daily Nutrition Ledger</p>
+          <h1>每日食谱记录</h1>
+        </div>
+        <button class="ghost-button" id="openProfileBtn" type="button">身体档案</button>
+      </header>
+
+      <main>
+        <section class="summary-band" aria-label="热量摘要">
+          <div class="home-calendar">
+            <input id="recordDate" type="hidden" />
+            <div class="calendar-head">
+              <div>
+                <p class="eyebrow">Record Date</p>
+                <h2 id="calendarMonthLabel">记录日期</h2>
+                <small id="selectedDateLabel">请选择日期</small>
+              </div>
+              <div class="calendar-actions">
+                <button class="icon-button" id="prevMonthBtn" type="button" aria-label="上个月">‹</button>
+                <button class="secondary-button" id="todayBtn" type="button">今天</button>
+                <button class="icon-button" id="nextMonthBtn" type="button" aria-label="下个月">›</button>
+              </div>
+            </div>
+            <div class="calendar-weekdays" aria-hidden="true">
+              <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+            </div>
+            <div class="month-calendar" id="homeCalendarGrid" aria-label="记录日期日历"></div>
+          </div>
+
+          <div class="metric-grid">
+            <article class="metric-tile">
+              <span>今日摄入</span>
+              <strong id="dailyIntake">0 kcal</strong>
+              <small id="dailyMacroLine">蛋白 0g · 碳水 0g · 脂肪 0g</small>
+            </article>
+            <article class="metric-tile accent-green">
+              <span>今日缺口</span>
+              <strong id="dailyDeficit">0 kcal</strong>
+              <small id="dailyTargetLine">目标热量 0 kcal</small>
+            </article>
+            <article class="metric-tile accent-amber">
+              <span>本周累计</span>
+              <strong id="weeklyDeficit">0 kcal</strong>
+              <small id="weeklyIntakeLine">摄入 0 kcal</small>
+            </article>
+            <article class="metric-tile accent-coral">
+              <span>本月累计</span>
+              <strong id="monthlyDeficit">0 kcal</strong>
+              <small id="weightTrendLine">体重暂无记录</small>
+            </article>
+          </div>
+          <section class="goal-strip">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Goal Dial</p>
+                <h2>今日目标</h2>
+              </div>
+            </div>
+            <div class="target-meter">
+              <div class="meter-topline">
+                <span id="goalSummary">请先完善身体档案</span>
+                <strong id="remainingCalories">0 kcal</strong>
+              </div>
+              <div class="progress-track">
+                <span id="calorieProgress"></span>
+              </div>
+              <p id="targetAdvice" class="muted-text">保存身高、体重、年龄与目标后，会自动计算基础代谢、维持热量和推荐摄入。</p>
+            </div>
+          </section>
+        </section>
+
+        <nav class="tabbar" aria-label="应用导航">
+          <button class="tab-button is-active" data-tab="today" type="button">今日</button>
+          <button class="tab-button" data-tab="coach" type="button">AI 建议</button>
+          <button class="tab-button" data-tab="settings" type="button">设置</button>
+        </nav>
+
+        <section class="tab-panel is-active" id="todayPanel">
+          <div class="content-grid">
+            <section class="tool-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Meal Capture</p>
+                  <h2>记录餐食</h2>
+                </div>
+                <button class="secondary-button" id="estimateMealBtn" type="button">AI 估算</button>
+              </div>
+
+              <form id="mealForm" class="form-grid">
+                <label>
+                  餐次
+                  <select id="mealType">
+                    <option value="早餐">早餐</option>
+                    <option value="午餐">午餐</option>
+                    <option value="晚餐">晚餐</option>
+                    <option value="加餐">加餐</option>
+                    <option value="运动补给">运动补给</option>
+                  </select>
+                </label>
+                <label>
+                  热量 kcal
+                  <input id="mealCalories" type="number" min="0" step="1" placeholder="例如 520" />
+                </label>
+                <label class="wide">
+                  食物内容
+                  <textarea id="mealText" rows="4" placeholder="例如：鸡胸肉 150g，米饭 200g，西兰花一碗，橄榄油少量"></textarea>
+                </label>
+                <label>
+                  蛋白质 g
+                  <input id="mealProtein" type="number" min="0" step="0.1" placeholder="可选" />
+                </label>
+                <label>
+                  碳水 g
+                  <input id="mealCarbs" type="number" min="0" step="0.1" placeholder="可选" />
+                </label>
+                <label>
+                  脂肪 g
+                  <input id="mealFat" type="number" min="0" step="0.1" placeholder="可选" />
+                </label>
+                <button class="primary-button wide" type="submit">保存餐食</button>
+              </form>
+            </section>
+
+            <section class="tool-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Daily Log</p>
+                  <h2>当天记录</h2>
+                </div>
+              </div>
+              <div class="meal-list" id="mealList"></div>
+            </section>
+          </div>
+
+          <div class="content-grid">
+            <section class="tool-panel compact-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Weight Check</p>
+                  <h2>记录体重</h2>
+                </div>
+              </div>
+              <form id="weightForm" class="inline-form">
+                <label>
+                  当日体重 kg
+                  <input id="weightValue" type="number" min="20" max="300" step="0.1" placeholder="例如 68.5" />
+                </label>
+                <label>
+                  备注
+                  <input id="weightNote" type="text" maxlength="40" placeholder="晨重 / 训练后" />
+                </label>
+                <button class="primary-button" type="submit">保存</button>
+              </form>
+            </section>
+
+            <section class="tool-panel compact-panel activity-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Activity</p>
+                  <h2>记录活动量</h2>
+                </div>
+              </div>
+              <form id="activityForm" class="activity-form">
+                <label>
+                  步数
+                  <input id="activitySteps" type="number" min="0" step="1" placeholder="例如 8500" />
+                </label>
+                <label>
+                  运动类型
+                  <input id="activityType" type="text" maxlength="30" placeholder="力量 / 跑步 / 骑行" />
+                </label>
+                <label>
+                  时长 min
+                  <input id="activityMinutes" type="number" min="0" step="1" placeholder="例如 45" />
+                </label>
+                <label>
+                  强度
+                  <select id="activityIntensity">
+                    <option value="低">低</option>
+                    <option value="中" selected>中</option>
+                    <option value="高">高</option>
+                  </select>
+                </label>
+                <label>
+                  消耗 kcal
+                  <input id="activityCalories" type="number" min="0" step="1" placeholder="可选" />
+                </label>
+                <label>
+                  备注
+                  <input id="activityNote" type="text" maxlength="50" placeholder="训练部位 / 状态" />
+                </label>
+                <button class="primary-button wide" type="submit">保存活动量</button>
+              </form>
+              <div class="activity-summary" id="activitySummary"></div>
+            </section>
+
+          </div>
+
+          <div class="content-grid">
+            <section class="tool-panel chart-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Energy Balance</p>
+                  <h2>热量缺口走势</h2>
+                </div>
+                <select id="trendRange" aria-label="趋势范围">
+                  <option value="7">近 7 天</option>
+                  <option value="30" selected>近 30 天</option>
+                  <option value="90">近 90 天</option>
+                </select>
+              </div>
+              <canvas id="deficitChart" width="720" height="320" aria-label="热量缺口图表"></canvas>
+            </section>
+
+            <section class="tool-panel chart-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Body Weight</p>
+                  <h2>体重变化</h2>
+                </div>
+                <strong id="weightDeltaBadge" class="badge">暂无变化</strong>
+              </div>
+              <canvas id="weightChart" width="720" height="320" aria-label="体重趋势图表"></canvas>
+            </section>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="coachPanel">
+          <div class="content-grid">
+            <section class="tool-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">DeepSeek Coach</p>
+                  <h2>营养分析与建议</h2>
+                </div>
+              </div>
+              <div class="quick-actions">
+                <button class="secondary-button" data-coach-action="today" type="button">分析今日饮食</button>
+                <button class="secondary-button" data-coach-action="tomorrow" type="button">生成明日食谱</button>
+                <button class="secondary-button" data-coach-action="week" type="button">一周调整策略</button>
+              </div>
+              <label class="coach-question">
+                自定义问题
+                <textarea id="coachQuestion" rows="5" placeholder="例如：我今晚还剩 450 kcal，想吃得饱一点，该怎么搭配？"></textarea>
+              </label>
+              <button class="primary-button" id="askCoachBtn" type="button">询问 DeepSeek</button>
+            </section>
+
+            <section class="tool-panel output-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Response</p>
+                  <h2>AI 输出</h2>
+                </div>
+                <span class="status-pill" id="apiStatus">未连接</span>
+              </div>
+              <details class="reasoning-box" id="reasoningBox">
+                <summary>思考过程</summary>
+                <div class="reasoning-output" id="reasoningOutput"></div>
+              </details>
+              <div class="ai-output" id="aiOutput">配置 API 后，可以让 DeepSeek 基于你的身高、体重、饮食与体重变化给出建议。</div>
+            </section>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="settingsPanel">
+          <div class="content-grid">
+            <section class="tool-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Profile</p>
+                  <h2>身体档案</h2>
+                </div>
+              </div>
+              <form id="profileForm" class="form-grid">
+                <label>
+                  身高 cm
+                  <input id="profileHeight" type="number" min="80" max="240" step="1" required />
+                </label>
+                <label>
+                  当前体重 kg
+                  <input id="profileWeight" type="number" min="20" max="300" step="0.1" required />
+                </label>
+                <label>
+                  年龄
+                  <input id="profileAge" type="number" min="12" max="100" step="1" required />
+                </label>
+                <label>
+                  性别
+                  <select id="profileGender">
+                    <option value="male">男</option>
+                    <option value="female">女</option>
+                    <option value="other">其他 / 不指定</option>
+                  </select>
+                </label>
+                <label>
+                  活动水平
+                  <select id="profileActivity">
+                    <option value="1.2">久坐，很少运动</option>
+                    <option value="1.375">轻度活动，每周 1-3 次</option>
+                    <option value="1.55">中等活动，每周 3-5 次</option>
+                    <option value="1.725">高活动，每周 6-7 次</option>
+                  </select>
+                </label>
+                <label>
+                  当前目标
+                  <select id="profileGoal">
+                    <option value="cut">减脂</option>
+                    <option value="gain">增肌</option>
+                    <option value="maintain">维持</option>
+                  </select>
+                </label>
+                <label>
+                  目标强度
+                  <select id="profilePace">
+                    <option value="mild">温和</option>
+                    <option value="standard">标准</option>
+                    <option value="aggressive">积极</option>
+                  </select>
+                </label>
+                <label>
+                  目标体重 kg
+                  <input id="profileTargetWeight" type="number" min="20" max="300" step="0.1" placeholder="可选" />
+                </label>
+                <button class="primary-button wide" type="submit">保存身体档案</button>
+              </form>
+            </section>
+
+            <section class="tool-panel">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">API</p>
+                  <h2>DeepSeek 接入</h2>
+                </div>
+              </div>
+              <form id="apiForm" class="form-grid">
+                <label>
+                  调用方式
+                  <select id="apiMode">
+                    <option value="proxy">本地代理 /api/deepseek/chat</option>
+                    <option value="direct">浏览器直连 DeepSeek</option>
+                  </select>
+                </label>
+                <label>
+                  模型
+                  <input id="apiModel" type="text" value="deepseek-v4-flash" />
+                </label>
+                <label class="wide">
+                  Base URL
+                  <input id="apiBaseUrl" type="url" value="https://api.deepseek.com" />
+                </label>
+                <label class="wide">
+                  API Key（直连模式才会保存在本机浏览器）
+                  <input id="apiKey" type="password" autocomplete="off" placeholder="sk-..." />
+                </label>
+                <label>
+                  AI 思考模式
+                  <select id="aiMode">
+                    <option value="fast">快速模式（关闭 thinking）</option>
+                    <option value="deep">深度分析（开启 thinking）</option>
+                  </select>
+                </label>
+                <label>
+                  思考强度
+                  <select id="reasoningEffort">
+                    <option value="high">high</option>
+                    <option value="max">max</option>
+                  </select>
+                </label>
+                <label class="check-label wide">
+                  <input id="showReasoning" type="checkbox" />
+                  <span>显示模型思考过程</span>
+                </label>
+                <button class="primary-button wide" type="submit">保存 API 设置</button>
+              </form>
+              <p class="muted-text warning-text">推荐使用本地代理：在命令行设置 DEEPSEEK_API_KEY 后运行 node server.js。浏览器直连仅适合个人本地测试。</p>
+            </section>
+          </div>
+
+          <section class="tool-panel">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">Data</p>
+                <h2>数据管理</h2>
+              </div>
+            </div>
+            <div class="data-actions">
+              <button class="secondary-button" id="exportDataBtn" type="button">导出 JSON</button>
+              <label class="file-button">
+                导入 JSON
+                <input id="importDataInput" type="file" accept="application/json" />
+              </label>
+              <button class="danger-button" id="resetDataBtn" type="button">清空本地数据</button>
+            </div>
+            <div class="cloud-sync">
+              <div class="section-heading">
+                <div>
+                  <p class="eyebrow">Cloud Sync</p>
+                  <h2>云端同步</h2>
+                </div>
+                <span class="status-pill" id="cloudStatus">未配置</span>
+              </div>
+              <form id="cloudForm" class="form-grid">
+                <label class="wide">
+                  WebDAV 地址
+                  <input id="cloudUrl" type="url" placeholder="https://dav.jianguoyun.com/dav/" />
+                </label>
+                <label>
+                  账号
+                  <input id="cloudUsername" type="text" autocomplete="username" placeholder="坚果云账号 / 邮箱" />
+                </label>
+                <label>
+                  应用密码
+                  <input id="cloudPassword" type="password" autocomplete="current-password" placeholder="第三方应用密码" />
+                </label>
+                <label class="wide">
+                  云端文件路径
+                  <input id="cloudPath" type="text" placeholder="/每日食谱记录/nutrition-ledger.json" />
+                </label>
+                <button class="primary-button wide" type="submit">保存云同步配置</button>
+              </form>
+              <p class="muted-text warning-text">保存配置后会自动同步；应用打开或记录更新后会比较本地与云端更新时间，自动拉取较新数据或上传本机最新数据。坚果云地址通常为 https://dav.jianguoyun.com/dav/，密码请使用“第三方应用管理”生成的应用密码。</p>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="profileDialog" class="profile-dialog">
+      <form method="dialog" class="dialog-card">
+        <p class="eyebrow">First Run</p>
+        <h2>先建立你的身体档案</h2>
+        <p class="muted-text">应用会用这些信息估算基础代谢、维持热量、每日目标摄入和热量缺口。所有记录默认保存在本机浏览器。</p>
+        <button class="primary-button" id="jumpToProfileBtn" type="button">去填写</button>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
