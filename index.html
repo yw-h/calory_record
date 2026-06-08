@@ -40,26 +40,28 @@
           </div>
 
           <div class="metric-grid">
-            <article class="metric-tile">
+            <article class="metric-tile metric-primary">
               <span>今日摄入</span>
               <strong id="dailyIntake">0 kcal</strong>
               <small id="dailyMacroLine">蛋白 0g · 碳水 0g · 脂肪 0g</small>
             </article>
-            <article class="metric-tile accent-green">
+            <article class="metric-tile metric-balance accent-green">
               <span>今日缺口</span>
               <strong id="dailyDeficit">0 kcal</strong>
               <small id="dailyTargetLine">目标热量 0 kcal</small>
             </article>
-            <article class="metric-tile accent-amber">
-              <span>本周累计</span>
-              <strong id="weeklyDeficit">0 kcal</strong>
-              <small id="weeklyIntakeLine">摄入 0 kcal</small>
-            </article>
-            <article class="metric-tile accent-coral">
-              <span>本月累计</span>
-              <strong id="monthlyDeficit">0 kcal</strong>
-              <small id="weightTrendLine">体重暂无记录</small>
-            </article>
+            <div class="mini-metrics" aria-label="secondary calorie metrics">
+              <article class="metric-tile metric-compact accent-amber">
+                <span>本周累计</span>
+                <strong id="weeklyDeficit">0 kcal</strong>
+                <small id="weeklyIntakeLine">摄入 0 kcal</small>
+              </article>
+              <article class="metric-tile metric-compact accent-coral">
+                <span>本月累计</span>
+                <strong id="monthlyDeficit">0 kcal</strong>
+                <small id="weightTrendLine">体重暂无记录</small>
+              </article>
+            </div>
           </div>
           <section class="goal-strip">
             <div class="section-heading">
